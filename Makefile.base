@@ -1,0 +1,33 @@
+##########################################################################
+#
+#  Minimal, self-contained build base for the standalone libfpsap repo.
+#
+#  The plugin is freestanding C (only <stdint.h>/<string.h>, no external
+#  dependencies), so none of a larger project's toolchain config is needed.
+#  This lets the repo build on its own:  make        -> lib/<os>/<arch>/libfpsap.<suf>
+#                                        make check  -> offline golden vectors
+#
+##########################################################################
+
+ARCH := $(shell A=$$(uname -m); if [ "$$A" = "x86_64" ]; then echo amd64; \
+          elif [ "$$A" = "aarch64" ]; then echo arm64; else echo "$$A"; fi)
+OS   := $(shell uname -s | tr A-Z a-z)
+
+CC ?= cc
+
+ifeq ($(OS),darwin)
+	LIB_SUFFIX  = dylib
+	STRIP_FLAGS = -x
+else
+	LIB_SUFFIX  = so
+	STRIP_FLAGS =
+endif
+
+OBJECT_DIR  = .obj/$(OS)/$(ARCH)
+LIB_DIR     = lib/$(OS)/$(ARCH)
+PREFIX     ?= /usr/local
+
+MKDIR        = @mkdir -p
+RM           = @rm -f
+RM_RECURSIVE = @rm -rf
+CP           = @cp
